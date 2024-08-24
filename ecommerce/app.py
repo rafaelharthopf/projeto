@@ -1,20 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import mysql.connector
-from mysql.connector import Error
+from flask_sqlalchemy import SQLAlchemy
 from config import Config
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  
 app.config.from_object(Config)
+db = SQLAlchemy(app)
 
-def get_db_connection():
-    connection = mysql.connector.connect(
-        host=app.config['MYSQL_HOST'],
-        user=app.config['MYSQL_USER'],
-        password=app.config['MYSQL_PASSWORD'],
-        database=app.config['MYSQL_DATABASE']
-    )
-    return connection
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+
+def create_tables():
+    with app.app_context():
+        db.create_all()
 
 @app.route('/')
 def index():
@@ -25,14 +29,9 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM users WHERE username = %s AND password = %s', (username, password))
-        user = cursor.fetchone()
-        cursor.close()
-        connection.close()
+        user = User.query.filter_by(username=username, password=password).first()
         if user:
-            session['user_id'] = user['id']
+            session['user_id'] = user.id
             flash('Login bem-sucedido!', 'success')
             return redirect(url_for('products'))
         else:
@@ -44,18 +43,14 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        connection = get_db_connection()
-        cursor = connection.cursor()
         try:
-            cursor.execute('INSERT INTO users (username, password) VALUES (%s, %s)', (username, password))
-            connection.commit()
+            new_user = User(username=username, password=password)
+            db.session.add(new_user)
+            db.session.commit()
             flash('Registrado com sucesso. Faça o Login.', 'success')
             return redirect(url_for('login'))
-        except Error as e:
+        except Exception as e:
             flash(f'Ocorreu um erro: {e}', 'danger')
-        finally:
-            cursor.close()
-            connection.close()
     return render_template('register.html')
 
 @app.route('/products', methods=['GET', 'POST'])
@@ -63,64 +58,48 @@ def products():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    connection = get_db_connection()
-    cursor = connection.cursor(dictionary=True)
-    try:
-        if request.method == 'POST':
-            action = request.form['action']
-            product_id = request.form.get('product_id')
-            name = request.form.get('name')
-            price = request.form.get('price')
+    if request.method == 'POST':
+        action = request.form['action']
+        product_id = request.form.get('product_id')
+        name = request.form.get('name')
+        price = request.form.get('price')
 
-            if action == 'add':
-                cursor.execute('INSERT INTO products (name, price) VALUES (%s, %s)', (name, price))
-                connection.commit()
-                flash('Produto adicionado com Sucesso', 'success')
-            elif action == 'delete':
-                cursor.execute('DELETE FROM products WHERE id = %s', (product_id,))
-                connection.commit()
+        if action == 'add':
+            new_product = Product(name=name, price=price)
+            db.session.add(new_product)
+            db.session.commit()
+            flash('Produto adicionado com Sucesso', 'success')
+        elif action == 'delete':
+            product = Product.query.get(product_id)
+            if product:
+                db.session.delete(product)
+                db.session.commit()
                 flash('Produto deletado com Sucesso', 'success')
-            elif action == 'edit':
-                if name and price and product_id:
-                    cursor.execute('UPDATE products SET name = %s, price = %s WHERE id = %s', (name, price, product_id))
-                    connection.commit()
-                    flash('Produto atualizado com Sucesso', 'success')
-                else:
-                    flash('Please provide all required fields.', 'warning')
+        elif action == 'edit':
+            product = Product.query.get(product_id)
+            if product and name and price:
+                product.name = name
+                product.price = price
+                db.session.commit()
+                flash('Produto atualizado com Sucesso', 'success')
+            else:
+                flash('Please provide all required fields.', 'warning')
 
-        cursor.execute('SELECT * FROM products')
-        products = cursor.fetchall()
-    except Error as e:
-        flash(f'Ocorreu um erro: {e}', 'danger')
-        products = []
-    finally:
-        cursor.close()
-        connection.close()
-
+    products = Product.query.all()
     return render_template('products.html', products=products)
 
 @app.route('/edit/<int:product_id>', methods=['GET', 'POST'])
 def edit_product(product_id):
-    connection = get_db_connection()
-    cursor = connection.cursor(dictionary=True)
-    try:
-        if request.method == 'POST':
-            name = request.form['name']
-            price = request.form['price']
-            if name and price:
-                cursor.execute('UPDATE products SET name = %s, price = %s WHERE id = %s', (name, price, product_id))
-                connection.commit()
-                flash('Produto atualizado com sucesso', 'success')
-                return redirect(url_for('products'))
-
-        cursor.execute('SELECT * FROM products WHERE id = %s', (product_id,))
-        product = cursor.fetchone()
-    except Error as e:
-        flash(f'Ocorreu um erro: {e}', 'danger')
-        product = None
-    finally:
-        cursor.close()
-        connection.close()
+    product = Product.query.get(product_id)
+    if request.method == 'POST':
+        name = request.form['name']
+        price = request.form['price']
+        if product and name and price:
+            product.name = name
+            product.price = price
+            db.session.commit()
+            flash('Produto atualizado com sucesso', 'success')
+            return redirect(url_for('products'))
 
     return render_template('edit_product.html', product=product)
 
@@ -131,4 +110,5 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    create_tables()  
+    app.run(debug=False)

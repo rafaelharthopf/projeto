@@ -1,5 +1,8 @@
 class Config:
-    MYSQL_HOST = 'rafaelharthopf1.mysql.pythonanywhere-services.com'
-    MYSQL_USER = 'rafaelharthopf1'
-    MYSQL_PASSWORD = 'sua_senha'
-    MYSQL_DATABASE = 'rafaelharthopf1$ecommerce_db'
+    SECRET_KEY = 'supersecretkey'  
+    SQLALCHEMY_DATABASE_URI = (
+        'mysql+mysqlconnector://'
+        'rafaelharthopf1:sua_senha@rafaelharthopf1.mysql.pythonanywhere-services.com/'
+        'rafaelharthopf1$ecommerce_db'
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False  
