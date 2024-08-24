@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="jumbotron jumbotron-fluid text-center bg-primary text-white rounded">
+        <div class="container">
+            <h1 class="display-4">Bem-vindo ao E-commerce!</h1>
+            <p class="lead">Gerencie seus produtos de forma simples e eficaz.</p>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row text-center mt-5">
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Feature 1">
+                <div class="card-body">
+                    <h5 class="card-title">Gerenciamento de Produtos</h5>
+                    <p class="card-text">Adicione, edite e remova produtos com facilidade.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Feature 2">
+                <div class="card-body">
+                    <h5 class="card-title">Interface Amigável</h5>
+                    <p class="card-text">Uma interface intuitiva e fácil de usar para todos os usuários.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Feature 3">
+                <div class="card-body">
+                    <h5 class="card-title">Segurança</h5>
+                    <p class="card-text">Proteja suas informações e mantenha seus dados seguros.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center mt-5">
+        <h2 class="mb-4">Pronto para começar?</h2>
+        <p class="lead">Clique nos botões abaixo para acessar ou registrar-se.</p>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}">Login</a>
+        <a class="btn btn-secondary btn-lg" href="{{ url_for('register') }}">Register</a>
+    </div>
+</div>
+{% endblock %}
