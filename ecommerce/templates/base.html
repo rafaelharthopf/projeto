@@ -28,9 +28,30 @@
             <a class="navbar-brand" href="{{ url_for('index') }}">Página Inicial</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav mr-auto">
+                    {% if g.current_user and g.current_user.is_admin %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('products') }}">Produtos</a>
+                        <a class="nav-link" href="{{ url_for('manage_ads') }}">Anúncios</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('manage_categories') }}">Categorias</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_purchases') }}">Histórico de Compras Geral</a>
+                    </li>
+                     {% endif %}
+                    
+                    {% if g.current_user and not g.current_user.is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('manage_favorites') }}">Favoritos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('cart') }}">Carrinho</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('purchase_history') }}">Histórico de Compras</a>
+                    </li>
+                    {% endif %}
+                    
                     {% if 'user_id' not in session %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('login') }}">Login</a>

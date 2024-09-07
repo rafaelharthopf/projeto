@@ -12,41 +12,19 @@
 
     <!-- Features Section -->
     <div class="row text-center mt-5">
+        {% for ad in ads %}
         <div class="col-md-4">
             <div class="card mb-4 shadow-sm">
-                <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Feature 1">
+                <img src="{{ url_for('static', filename='uploads/' + ad.image_path) }}" class="card-img-top" alt="{{ ad.title }}">
                 <div class="card-body">
-                    <h5 class="card-title">Gerenciamento de Produtos</h5>
-                    <p class="card-text">Adicione, edite e remova produtos com facilidade.</p>
+                    <h5 class="card-title">{{ ad.title }}</h5>
+                    <p class="card-text">{{ ad.description }}</p>
+                    <p class="card-text">R$ {{ ad.price }}</p>
+                    <a href="{{ url_for('ad_detail', ad_id=ad.id) }}" class="btn btn-primary">Ver Detalhes</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card mb-4 shadow-sm">
-                <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Feature 2">
-                <div class="card-body">
-                    <h5 class="card-title">Interface Amigável</h5>
-                    <p class="card-text">Uma interface intuitiva e fácil de usar para todos os usuários.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4 shadow-sm">
-                <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Feature 3">
-                <div class="card-body">
-                    <h5 class="card-title">Segurança</h5>
-                    <p class="card-text">Proteja suas informações e mantenha seus dados seguros.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Call to Action -->
-    <div class="text-center mt-5">
-        <h2 class="mb-4">Pronto para começar?</h2>
-        <p class="lead">Clique nos botões abaixo para acessar ou registrar-se.</p>
-        <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}">Login</a>
-        <a class="btn btn-secondary btn-lg" href="{{ url_for('register') }}">Register</a>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
